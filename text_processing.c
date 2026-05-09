@@ -4,13 +4,19 @@
 
 char *getLine();
 char *expandBuffer(char *buffer, size_t *capacity);
+int isValidOctalNumber(const char *str);
 
 int main() 
 {
    char *line;
    while ((line = getLine()) != NULL)
    {   
-       printf("You entered: %s\n", line);
+        if (isValidOctalNumber(line)) 
+        {
+        
+        }
+
+
        free(line);
    }
 
@@ -77,4 +83,31 @@ char *expandBuffer(char *buffer, size_t *capacity)
     }
     *capacity = new_capacity;
     return temporary_buffer;
+}
+
+int isValidOctalNumber(const char *str) 
+{
+    size_t index = 0;
+    int found_at_least_one_digit = 0;
+    
+    while (str[index] != '\0') 
+    {
+       char current_character = str[index];
+       if (current_character == ' ' || current_character == '\t') 
+       {
+           index++;
+           continue;
+       }
+       else if (current_character >= '0' && current_character <= '7') 
+       {
+           found_at_least_one_digit = 1;
+           index++;
+       } 
+       else 
+       {
+            printf("Invalid octal number: %s\n", str);
+            return 0; 
+       }
+    }
+    return found_at_least_one_digit;
 }
