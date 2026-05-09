@@ -5,6 +5,7 @@
 char *getLine();
 char *expandBuffer(char *buffer, size_t *capacity);
 int isValidOctalNumber(const char *str);
+char *removeWhitespaces(const char *str);
 
 int main() 
 {
@@ -13,7 +14,8 @@ int main()
    {   
         if (isValidOctalNumber(line)) 
         {
-        
+            char *cleaned_line = removeWhitespaces(line);
+
         }
 
 
@@ -110,4 +112,34 @@ int isValidOctalNumber(const char *str)
        }
     }
     return found_at_least_one_digit;
+}
+
+char *removeWhitespaces(const char *str) 
+{
+    size_t length = 0;
+    for (int character = 0; str[character] != '\0'; character++) 
+    {
+        if (str[character] >= '0' && str[character] <= '7') 
+        {
+            length++;
+        }
+    }
+
+    char *cleaned = malloc((length + 1) * sizeof(char));
+    if (cleaned == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return NULL;
+    }
+    size_t index = 0;
+    for (int character = 0; str[character] != '\0'; character++)
+    {
+        if (str[character] >= '0' && str[character] <= '7') 
+        {
+            cleaned[index] = str[character];
+            index++;
+        }
+    }
+    cleaned[index] = '\0';
+    return cleaned;
 }
