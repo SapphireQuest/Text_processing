@@ -1,26 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rand_malloc.h"
+#include <string.h>
 
 char *getLine();
 char *expandBuffer(char *buffer, size_t *capacity);
 int isValidOctalNumber(const char *str);
 char *removeWhitespaces(const char *str);
+char **expandStoredNumbers(char **stored_numbers, size_t *stored_capacity);
+char *addOctal(const char *octal1, const char *octal2);
 
 int main() 
 {
-   char *line;
-   while ((line = getLine()) != NULL)
-   {   
+    char *line;
+    char **stored_numbers = NULL;
+    size_t stored_count = 0;
+    size_t stored_capacity = 10;
+    while ((line = getLine()) != NULL)
+    {   
         if (isValidOctalNumber(line)) 
         {
             char *cleaned_line = removeWhitespaces(line);
+            if (cleaned_line != NULL)
+            {
+                if (stored_count >= stored_capacity)
+                {
+                    char **new_stored_numbers = expandStoredNumbers(stored_numbers, &stored_capacity);
+                    if (new_stored_numbers == NULL)
+                    {
+                        printf("Failed to expand stored numbers\n");
+                        free(cleaned_line);
+                        free(stored_numbers);
+                        free(line);
+                        return 1;
+                    }
+                    stored_numbers = new_stored_numbers;
+                }
+                stored_numbers[stored_count] = cleaned_line;
+                stored_count++;
+            }
+
 
         }
-
-
        free(line);
-   }
+    }
 
     return 0;
 }
@@ -142,4 +165,75 @@ char *removeWhitespaces(const char *str)
     }
     cleaned[index] = '\0';
     return cleaned;
+}
+
+char **expandStoredNumbers(char **stored_numbers, size_t *stored_capacity) 
+{
+    size_t new_capacity = 2*(*stored_capacity);
+    char **temporary_buffer = realloc(stored_numbers, new_capacity * sizeof(char*));
+    if (temporary_buffer == NULL)
+    {
+        printf("Memory reallocation failed\n");
+        return NULL;
+    }
+    *stored_capacity = new_capacity;
+    return temporary_buffer;
+}
+
+char *addOctal(const char *octal1, const char *octal2) 
+{
+    int len1 = strlen(octal1);
+    int len2 = strlen(octal2);
+    int size1 = len1 -1;
+    int size2 = len2 -1;
+    int carry = 0;
+    int max_size;
+    if (len1 > len2)
+    {
+        max_size = len1 + 2;
+    }
+    else
+    {
+        max_size = len2 + 2;
+    }
+    char *result = malloc(max_size * sizeof(char));
+    if (result == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return NULL;
+    }
+    int write_index = max_size - 1;
+    while (size1 >= 0 || size2 >= 0 || carry > 0) 
+    {
+        int sum = carry;
+        if (size1 >= 0)
+        {
+            sum += octal1[size1] - '0';
+            size1--;
+        }
+        if (size2 >= 0)
+        {
+            sum += octal2[size2] - '0';
+            size2--;
+        }
+        carry = sum / 8;
+        result[write_index] = (sum % 8) + '0';
+        write_index--;
+    }
+    char *final_result = malloc((max_size - write_index) * sizeof(char));
+    if (final_result == NULL)
+    {
+        printf("Memory allocation failed\n");
+        free(result);
+        return NULL;
+    }
+    int final_index = 0;
+    for (int real_digits = write_index + 1; real_digits < max_size; real_digits++)
+    {
+        final_result[final_index] = result[real_digits];
+        final_index++;
+    }
+    final_result[final_index] = '\0';
+    free(result);
+    return final_result;
 }
