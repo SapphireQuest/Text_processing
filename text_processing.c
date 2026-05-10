@@ -36,6 +36,10 @@ int main()
                     {
                         printf("Failed to expand stored numbers\n");
                         free(cleaned_line);
+                        for (size_t free_index = 0; free_index < stored_count; free_index++)
+                        {
+                            free(stored_numbers[free_index]);
+                        }
                         free(stored_numbers);
                         free(line);
                         return 1;
