@@ -13,9 +13,15 @@ char *addOctal(const char *octal1, const char *octal2);
 int main() 
 {
     char *line;
-    char **stored_numbers = NULL;
     size_t stored_count = 0;
     size_t stored_capacity = 10;
+    char **stored_numbers = malloc(stored_capacity * sizeof(char*));
+    if (stored_numbers == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
+    
     while ((line = getLine()) != NULL)
     {   
         if (isValidOctalNumber(line)) 
@@ -39,11 +45,50 @@ int main()
                 stored_numbers[stored_count] = cleaned_line;
                 stored_count++;
             }
-
-
         }
        free(line);
     }
+
+    char *total_sum = malloc(2 * sizeof(char));
+    if (total_sum == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return 1;
+    }
+    total_sum[0] = '0';
+    total_sum[1] = '\0';
+
+    for (size_t num = 0; num < stored_count; num++)
+    {
+        char *new_sum = addOctal(total_sum, stored_numbers[num]);
+        if (new_sum == NULL)
+        {
+            printf("Failed to add octal numbers\n");
+            free(total_sum);
+            for (size_t free_index = 0; free_index < stored_count; free_index++)
+            {
+                free(stored_numbers[free_index]);
+            }
+            free(stored_numbers);
+            return 1;
+        }
+        free(total_sum);
+        total_sum = new_sum;
+    }
+    printf("Sum: \n");
+    printf("%s\n\n", total_sum);
+    printf("Input numbers: \n");
+    for (size_t num = 0; num < stored_count; num++)
+    {
+        printf("%s\n", stored_numbers[num]);
+    }
+    printf("\n");
+    free(total_sum);
+    for (size_t free_index = 0; free_index < stored_count; free_index++)
+    {
+        free(stored_numbers[free_index]);
+    }
+    free(stored_numbers);
 
     return 0;
 }
