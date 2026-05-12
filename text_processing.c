@@ -13,6 +13,7 @@ char *manageBufferCapacity(char *buffer, size_t length, size_t *capacity);
 char *moveOctal(char *result, int write_index, int max_size);
 char **readAllNumbers(size_t *final_count);
 void freeStoredNumbers(char **stored_numbers, size_t stored_count);
+char *calculateTotal(char **stored_numbers, size_t stored_count);
 
 int main()
 {
@@ -20,14 +21,12 @@ int main()
     char **stored_numbers = readAllNumbers(&stored_count); 
     if (stored_numbers == NULL)
     {
-        printf("Memory allocation failed\n");
         return 1;
     }
 
     char *total_sum = calculateTotal(stored_numbers, stored_count);
     if (total_sum == NULL)
     {
-        printf("Memory allocation failed\n");
         freeStoredNumbers(stored_numbers, stored_count);
         return 1;
     }
@@ -54,7 +53,7 @@ char *getLine()
 
     if (buffer == NULL)
     {
-        printf("Memory allocation failed\n");
+        printf("Memory allocation failed getLine\n");
         return NULL;
     }
 
@@ -73,7 +72,10 @@ char *getLine()
         }
 
         buffer = manageBufferCapacity(buffer, length, &capacity);
-
+        if (buffer == NULL)
+        {
+            return NULL;
+        }
         buffer[length] = current_character;
         length++;
     }
@@ -92,7 +94,7 @@ char *manageBufferCapacity(char *buffer, size_t length, size_t *capacity)
     
     if (new_buffer == NULL)
     {
-        printf("Failed to expand buffer\n");
+        printf("Failed to expand buffer manageBufferCapacity\n");
         free(buffer);
         return NULL;
     }
@@ -105,7 +107,7 @@ char *expandBuffer(char *buffer, size_t *capacity)
     char *temporary_buffer = realloc(buffer, new_capacity * sizeof(char));
     if (temporary_buffer == NULL)
     {
-        printf("Memory reallocation failed\n");
+        printf("Memory reallocation failed expandBuffer\n");
         return NULL;
     }
     *capacity = new_capacity;
@@ -120,7 +122,7 @@ int isValidOctalNumber(const char *str)
     while (str[index] != '\0')
     {
         char current_character = str[index];
-        if (current_character == ' ' || current_character == '\t')
+        if (current_character == ' ' || current_character == '\t' || current_character == '\r')
         {
             index++;
             continue;
@@ -153,7 +155,7 @@ char *removeWhitespaces(const char *str)
     char *cleaned = malloc((length + 1) * sizeof(char));
     if (cleaned == NULL)
     {
-        printf("Memory allocation failed\n");
+        printf("Memory allocation failed removeWhitespaces\n");
         return NULL;
     }
     size_t index = 0;
@@ -175,7 +177,7 @@ char **expandStoredNumbers(char **stored_numbers, size_t *stored_capacity)
     char **temporary_buffer = realloc(stored_numbers, new_capacity * sizeof(char *));
     if (temporary_buffer == NULL)
     {
-        printf("Memory reallocation failed\n");
+        printf("Memory reallocation failed expandStoredNumbers\n");
         return NULL;
     }
     *stored_capacity = new_capacity;
@@ -202,7 +204,7 @@ char *addOctal(const char *octal1, const char *octal2)
     char *result = malloc(max_size * sizeof(char));
     if (result == NULL)
     {
-        printf("Memory allocation failed\n");
+        printf("Memory allocation failed addOctal\n");
         return NULL;
     }
 
@@ -233,7 +235,7 @@ char *moveOctal(char *result, int write_index, int max_size)
     char *final_result = malloc((max_size - write_index) * sizeof(char));
     if (final_result == NULL)
     {
-        printf("Memory allocation failed\n");
+        printf("Memory allocation failed moveOctal\n");
         free(result); 
         return NULL;
     }
@@ -269,7 +271,7 @@ char **readAllNumbers(size_t *final_count)
     char **stored_numbers = malloc(stored_capacity * sizeof(char*));
     if (stored_numbers == NULL)
     {
-        printf("Memory allocation failed\n");
+        printf("Memory allocation failed readAllNUms\n");
         return NULL;
     }
     
@@ -296,6 +298,13 @@ char **readAllNumbers(size_t *final_count)
                 stored_numbers[stored_count] = cleaned_line;
                 stored_count++;
             }
+            else
+            {
+                printf("Failed to remove whitespaces\n");
+                free(line);
+                freeStoredNumbers(stored_numbers, stored_count); 
+                return NULL;
+            }
         }
         free(line);
     }
@@ -309,7 +318,6 @@ char *calculateTotal(char **stored_numbers, size_t stored_count)
     char *total_sum = malloc(2 * sizeof(char));
     if (total_sum == NULL)
     {
-        printf("Memory allocation failed\n");
         return NULL;
     }
     total_sum[0] = '0';
@@ -320,7 +328,6 @@ char *calculateTotal(char **stored_numbers, size_t stored_count)
         char *new_sum = addOctal(total_sum, stored_numbers[num]);
         if (new_sum == NULL)
         {
-            printf("Failed to add octal numbers\n");
             free(total_sum);
             return NULL; 
         }
